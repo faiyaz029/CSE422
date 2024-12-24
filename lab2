@@ -1,0 +1,126 @@
+import random
+N = 3  
+T = 3  
+population_size = 4
+chromosm_length = N * T
+
+def create_chromosm():
+    return ''.join(random.choice('01') for no_need in range(chromosm_length))
+
+def create_population():
+    return [create_chromosm() for no_need in range(population_size)]
+    
+def fitness(chromosm):
+    penalty_overlap = 0
+    penalty_consistency = 0
+    for i in range(T):
+        segment = chromosm[i *N:(i + 1)*N]
+        scheduled = segment.count('1')
+        if scheduled > 1:
+            penalty_overlap= scheduled - 1 + penalty_overlap
+    for j in range(N):
+        scheduled_times =sum(chromosm[t*N +j] == '1' for t in range(T))
+        penalty_consistency = abs(scheduled_times - 1) + penalty_consistency
+        f= -(penalty_overlap + penalty_consistency)
+    return f
+#print(fitness("110110010"))
+
+def select_parents(population):
+    return sorted(random.sample(population, 2), key=fitness, reverse=True)
+
+def crossover(parent1, parent2):
+    point = random.randint(1, chromosm_length - 1)
+
+    a1 = parent1[:point]
+    a2 = parent2[:point]
+    b1 = parent1[point:]
+    b2 = parent2[point:]
+
+    child1 = a1 + b2
+    child2 = a2 + b1
+
+    return child1, child2
+
+
+
+
+def mutate(chromosm, mutation_rate=0.0001):
+    mutated = list(chromosm)
+
+    for i in range(len(mutated)):
+        if random.random() < mutation_rate:
+            if mutated[i] == '1':
+                mutated[i] = '0'
+            else:
+                mutated[i] = '1'
+    return ''.join(mutated)
+
+population = create_population()
+
+
+for i in range(10):
+    fitness_scores = []
+    inf = float('-inf')
+    for chromosm in population:
+        fitness_scores.append((chromosm, fitness(chromosm)))
+    best_chromosm = None
+    best_fitness = inf
+    bfinGen = inf
+    
+    for chromosm, fitness_score_1 in fitness_scores:
+        if fitness_score_1 > bfinGen:
+            best_chromosm = chromosm
+            bfinGen = fitness_score_1
+    
+    
+    if bfinGen > best_fitness:
+        best_solution_outPut = best_chromosm
+        best_fitness = bfinGen
+
+    if best_fitness == 0:
+        break
+    
+    
+    new_population = []
+    while len(new_population) < population_size:
+        parent1, parent2 = select_parents(population)
+        child1, child2 = crossover(parent1, parent2)
+        new_population.append(mutate(child1))
+        new_population.append(mutate(child2))
+    
+    population = new_population[:population_size]
+
+
+
+print( best_solution_outPut)
+print( best_fitness)
+
+#task2
+def two_point_crossover(parent1, parent2):
+    point1 = random.randint(1, chromosm_length - 1)
+    point2 = random.randint(1, chromosm_length - 1)
+    if point1 > point2:
+        point1, point2 = point2, point1
+
+    a1 = parent1[:point1]
+    a2 = parent2[:point1]
+    b1 = parent1[point1:point2]
+    b2 = parent2[point1:point2]
+    c1 = parent1[point2:]
+    c2 = parent2[point2:]
+
+    child1 = a1 + b2 + c1
+    child2 = a2 + b1 + c2
+
+    return child1, child2
+print(two_point_crossover("000111000", "111000111"))
+
+
+
+
+
+
+
+
+
+    
