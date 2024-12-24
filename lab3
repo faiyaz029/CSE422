@@ -1,0 +1,105 @@
+import random
+
+def alpha_beta_pruning(depth, node_index, max_player, scores, alpha, beta):
+    if depth == 5:
+        return scores[node_index]
+
+    if max_player:
+        max_eval = float('-inf')
+
+        for i in range(2):
+
+            eval = alpha_beta_pruning(depth+1, node_index * 2 + i, False, scores, alpha, beta)
+            max_eval = max(max_eval, eval)
+            alpha = max(alpha, eval)
+
+            if beta <= alpha:
+                break
+        return max_eval
+    
+    else:
+        min_eval = float('inf')
+
+        for i in range(2):
+
+            eval = alpha_beta_pruning(depth+1, node_index*2 + i, True, scores, alpha, beta)
+            beta = min(beta, eval)
+            min_eval = min(min_eval, eval)
+
+            if beta <= alpha:
+                break  
+        return min_eval
+
+
+def simulate_battle(starting_player):
+    total_rounds = 3
+    scores = [random.choice([-1,1]) for _ in range(2**5)]  
+    round_winners = []
+
+    for round_number in range(1, total_rounds + 1):
+        if starting_player == 0:
+            result = alpha_beta_pruning(0, 0, True, scores, float('-inf'), float('inf'))
+        else:
+            result = alpha_beta_pruning(0, 0, False, scores, float('-inf'), float('inf'))
+
+        if result == -1:
+            round_winners.append("Scorpion")
+            starting_player = 1 
+        else:
+            round_winners.append("Sub-Zero")
+            starting_player = 0  
+
+    scorpion_wins = round_winners.count("Scorpion")
+    subzero_wins = round_winners.count("Sub-Zero")
+
+    if scorpion_wins > subzero_wins:
+        game_winner = "Scorpion"
+    else:
+        game_winner = "Sub-Zero"
+
+    return game_winner, total_rounds, round_winners
+
+
+
+starting_player = int(input( ))
+game_winner, total_rounds, round_winners = simulate_battle(starting_player)
+
+
+print(f"Game Winner: {game_winner}")
+print(f"Total Rounds Played: {total_rounds}")
+
+for i in range(total_rounds):
+    print(f"Round {i + 1} Winner: {round_winners[i]}")
+
+
+##2
+
+def pacman_game(c):
+    outcomes = [3, 6, 2, 3, 7, 1, 2, 0]
+   
+    left_subtree= outcomes[:4]
+    right_subtree =outcomes[4:]
+
+    a = min(left_subtree[:2])
+    b = min(left_subtree[2:])
+    left_minimax = max(a,b )
+
+    right_minimax = max(min(right_subtree[:2]), min(right_subtree[2:]))
+    
+    left_dark_magic = max(left_subtree)-c
+    right_dark_magic = max(right_subtree)-c
+    
+    best_without_magic = max(left_minimax, right_minimax)
+    best_with_magic = max(left_dark_magic, right_dark_magic)
+    
+    if best_with_magic > best_without_magic:
+        if left_dark_magic > right_dark_magic:
+            move = "left"
+        else:
+            move ="right"
+        print(f"The new minimax value is {best_with_magic}. Pacman goes {move} and uses dark magic")
+    else:
+        print(f"The minimax value is {best_without_magic}. Pacman does not use dark magic")
+
+pacman_game(2)
+pacman_game(5)
